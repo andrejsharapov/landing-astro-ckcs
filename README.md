@@ -158,7 +158,7 @@ flowchart TB
 ### 2. Клонирование и установка зависимостей
 
 ```bash
-git clone https://github.com/madeas/ckcs-landing
+git clone https://github.com/madeas/langing-astro-ckcs
 cd ckcs-landing
 npm install
 ```
