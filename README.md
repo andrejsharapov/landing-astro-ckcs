@@ -240,11 +240,9 @@ npm run build
 
 В проекте используется рыбный домен `domen.site`. Перед публикацией на боевой сервер замените его на ваш реальный адрес (рекомендуется сразу с `https://`) в следующих файлах:
 
-1. **`astro.config.mjs`** — параметр `site: 'https://domen.site'` (отсюда автоматически формируются `<link rel="canonical">`, `og:url`, микроразметка Schema.org и ссылка в генерируемом `public/llms.txt` при запуске `npm run build`).
-2. **`public/robots.txt`** и **`public/sitemap.xml`** — адрес карты сайта (`Sitemap: https://domen.site`), тег `<loc>` и актуальная дата обновления `<lastmod>`.
-3. **`.env`** *(только для локальной разработки)* — переменная `PUBLIC_API_URL=https://domen.site`, если тестируете локальный фронтенд с боевым PHP API (для продакшн-сборки в `.env.production` уже прописан относительный путь `/api/v2`).
-
-*(Примечание: при статической сборке output: 'static' без указанного site в astro.config.mjs значение Astro.url.origin во время npm run build вернёт http://localhost:4321. Если хотите, чтобы в статическом HTML в canonical и og:url гарантированно подставлялся боевой домен, лучше оставить строку в Layout.astro в чек-листе или задать site в astro.config.mjs).*
+1. **`astro.config.mjs`** — параметр `site: ''` (отсюда автоматически формируются `<link rel="canonical">`, `og:url`, микроразметка Schema.org и ссылка в генерируемом `public/llms.txt` при запуске `npm run build`).
+2. **`public/robots.txt`** и **`public/sitemap.xml`** — адрес карты сайта (`Sitemap: `), тег `<loc>` и актуальная дата обновления `<lastmod>`.
+3. **`.env`** *(только для локальной разработки)* — переменная `PUBLIC_API_URL=`, если тестируете локальный фронтенд с боевым PHP API (для продакшн-сборки в `.env.production` уже прописан относительный путь `/api/v2`).
 
 ## Воронка событий
 
