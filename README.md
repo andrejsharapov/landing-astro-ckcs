@@ -2,6 +2,8 @@
 
 Базовый MVP для продажи авторских 3D-фигурок кавалер-кинг-чарльз-спаниелей (ККЧС) и сбора заявок на изготовление. Проект построен на гибридной архитектуре: сверхбыстрый фронтенд на [Astro](https://github.com/withastro/astro) с минимальным клиентским JavaScript и лёгкий REST API на нативном PHP + MySQL для приёма лидов.
 
+Результат на [Behance](https://www.behance.net/gallery/258960197/kkchsStore-MVP-lendinga-masterskoj-3D-figurok).
+
 - [Landing Page on Astro](#landing-page-on-astro)
   - [Что в проекте](#что-в-проекте)
   - [Запуск и развёртывание проекта](#запуск-и-развёртывание-проекта)
