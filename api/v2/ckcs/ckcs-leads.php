@@ -25,10 +25,11 @@ function sendTelegramLead(array $config, array $lead): void
 
     $text .= "\n<i>IP: " . $esc((string)($lead['ip'] ?? 'не определён')) . "</i>";
 
-    $ch = curl_init("https://telegram.org{$token}/sendMessage");
+    $ch = curl_init("https://api.telegram.org/bot{$token}/sendMessage");
     curl_setopt_array($ch, [
         CURLOPT_POST           => true,
         CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 2,
         CURLOPT_TIMEOUT        => 3,
         CURLOPT_POSTFIELDS     => [
             'chat_id'    => $chatId,
@@ -38,12 +39,68 @@ function sendTelegramLead(array $config, array $lead): void
     ]);
 
     $response = curl_exec($ch);
+
+    if ($response === false) {
+        error_log('Telegram curl error: ' . curl_error($ch));
+        curl_close($ch);
+        return;
+    }
+
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
     if ($httpCode !== 200) {
         error_log("Telegram API error ({$httpCode}): " . (string)$response);
     }
+}
+
+/**
+ * Определение IP клиента с учётом доверенных прокси
+ */
+function resolveClientIp(): ?string
+{
+    // Список доверенных прокси/балансировщиков (дополните при необходимости)
+    $trustedProxies = ['127.0.0.1', '::1'];
+
+    $remote = $_SERVER['REMOTE_ADDR'] ?? null;
+    if ($remote === null || !filter_var($remote, FILTER_VALIDATE_IP)) {
+        return null;
+    }
+
+    if (!in_array($remote, $trustedProxies, true)) {
+        return $remote;
+    }
+
+    $realIp = $_SERVER['HTTP_X_REAL_IP'] ?? '';
+    if ($realIp !== '' && filter_var($realIp, FILTER_VALIDATE_IP)) {
+        return $realIp;
+    }
+
+    $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
+    if ($forwarded !== '') {
+        $first = trim(explode(',', $forwarded)[0]);
+        if (filter_var($first, FILTER_VALIDATE_IP)) {
+            return $first;
+        }
+    }
+
+    return $remote;
+}
+
+/**
+ * Безопасное извлечение и обрезка строкового поля из входных данных
+ */
+function extractField(array $data, string $key, int $maxLength, string $default = ''): string
+{
+    $value = $data[$key] ?? $default;
+    if (!is_string($value)) {
+        $value = (string)$value;
+    }
+    if (!mb_check_encoding($value, 'UTF-8')) {
+        $value = mb_convert_encoding($value, 'UTF-8', 'UTF-8');
+    }
+    $value = trim($value);
+    return mb_substr($value, 0, $maxLength);
 }
 
 $configPath = __DIR__ . '/../../../api/v1/config.php';
@@ -77,23 +134,26 @@ if ($honeypot !== '') {
 }
 
 // 2. Проверка времени заполнения (не быстрее 2 секунд с момента открытия страницы)
-$loadedAt = (int)($data['loaded_at'] ?? 0);
+$loadedAt = max(0, (int)($data['loaded_at'] ?? 0));
 $nowMs = (int)round(microtime(true) * 1000);
-if ($loadedAt > 0 && ($nowMs - $loadedAt) < 2000) {
+$elapsed = $nowMs - $loadedAt;
+if ($loadedAt > 0 && $elapsed >= 0 && $elapsed < 2000) {
     http_response_code(429);
     echo json_encode(["error" => "Слишком быстрая отправка. Попробуйте ещё раз."], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
 // 3. Валидация и обрезка длины полей
-$name    = mb_substr(trim((string)($data['name'] ?? '')), 0, 100);
-$contact = mb_substr(trim((string)($data['contact'] ?? '')), 0, 150);
-$figure  = mb_substr(trim((string)($data['figure'] ?? 'Не выбрана')), 0, 150);
-$comment = mb_substr(trim((string)($data['comment'] ?? '')), 0, 1000);
+$name    = extractField($data, 'name', 100);
+$contact = extractField($data, 'contact', 150);
+$figure  = extractField($data, 'figure', 150, 'Не выбрана');
+$comment = extractField($data, 'comment', 1000);
 
-$ip = $_SERVER['HTTP_X_REAL_IP']
-    ?? (isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]) : null)
-    ?? ($_SERVER['REMOTE_ADDR'] ?? null);
+if ($figure === '') {
+    $figure = 'Не выбрана';
+}
+
+$ip = resolveClientIp();
 
 if ($name === '' || $contact === '') {
     http_response_code(400);
@@ -109,6 +169,7 @@ try {
         [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
         ]
     );
 
