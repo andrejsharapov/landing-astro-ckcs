@@ -1,0 +1,45 @@
+---
+interface Props {
+  name: string;
+  size: string;
+  price: string;
+  tag: string;
+  color: string;
+  imageUrl?: string;
+  desc: string;
+}
+
+const { name, size, price, tag, color, imageUrl, desc } = Astro.props;
+---
+
+<article class="product-card">
+  <div class="product-card__media-wrap">
+    <div class="product-card__media" style={`background-color: ${color};`}>
+      {tag && <span class="product-card__tag">{tag}</span>}
+      {size && <span class="product-card__size">{size}</span>}
+      {imageUrl && <img src={imageUrl} alt={name} loading="lazy" />}
+    </div>
+  </div>
+
+  <div class="product-card__body">
+    <h3>{name}</h3>
+    <p>{desc}</p>
+
+    <div class="product-card__footer">
+      <div class="product-card__price-wrap">
+        <small>Стоимость</small>
+        <span class="price">{price}</span>
+      </div>
+      <button
+        type="button"
+        class="btn btn--secondary select-figure-btn"
+        data-figure={`${name} (${price})`}
+        data-name={name}
+        data-price={price}
+        data-color={color}
+      >
+        Выбрать
+      </button>
+    </div>
+  </div>
+</article>

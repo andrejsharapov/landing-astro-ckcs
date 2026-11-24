@@ -1,0 +1,190 @@
+---
+interface Figure {
+  name: string;
+  price: string;
+  color?: string;
+}
+
+interface Props {
+  figures: Figure[];
+  legal: {
+    consentText: string;
+    policyLabel: string;
+    policyUrl: string;
+  };
+}
+
+const { figures, legal } = Astro.props;
+const first = figures.at(0);
+---
+
+<section id="order" class="order">
+  <div class="container">
+    <div class="order-box">
+      <div class="order-box__info">
+        <span class="pill">💌 Без предоплаты на сайте</span>
+        <h2>Оставьте заявку на фигурку</h2>
+        <p>
+          Мы свяжемся с вами в Telegram или по телефону, покажем живые фото готовых ККЧС
+          и согласуем детали доставки.
+        </p>
+        <ul class="order-list">
+          <li><span class="order-list__check">✓</span> Отправим фото перед отправкой посылки</li>
+          <li><span class="order-list__check">✓</span> Доставка СДЭК, Почтой России или Яндекс Доставкой</li>
+          <li><span class="order-list__check">✓</span> Подарочная открытка в каждом заказе</li>
+        </ul>
+      </div>
+
+      <form id="lead-form" class="lead-form">
+        <div class="form-hp" aria-hidden="true">
+          <label for="website">ckcs-landing</label>
+          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+        </div>
+
+        {first && (
+          <div class="selected-preview" id="selected-preview">
+            <div
+              class="selected-preview__swatch"
+              id="preview-swatch"
+              style={`background-color: ${first.color || "#FFE5D9"};`}
+            >
+              🐶
+            </div>
+            <div class="selected-preview__info">
+              <small>Ваш выбор</small>
+              <strong id="preview-name">{first.name}</strong>
+            </div>
+            <span class="selected-preview__price" id="preview-price">{first.price}</span>
+          </div>
+        )}
+
+        <div class="form-group">
+          <label for="figure">Выбранная фигурка</label>
+          <select id="figure" name="figure">
+            {figures.map((item) => (
+              <option
+                value={`${item.name} (${item.price})`}
+                data-name={item.name}
+                data-price={item.price}
+                data-color={item.color || "#FFE5D9"}
+              >
+                {item.name} — {item.price}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="name">Ваше имя *</label>
+          <input type="text" id="name" name="name" placeholder="Например, Анна" required />
+        </div>
+
+        <div class="form-group">
+          <label for="contact">Телефон или ник в Telegram *</label>
+          <input type="text" id="contact" name="contact" placeholder="+7 (999) 000-00-00 или @username" required />
+        </div>
+
+        <div class="form-group">
+          <label for="comment">Пожелания к заказу</label>
+          <textarea id="comment" name="comment" rows="3" placeholder="Цвет, размер или идея для кастома..."></textarea>
+        </div>
+
+        <div class="form-checkbox">
+          <input type="checkbox" id="consent" name="consent" required />
+          <label for="consent">
+            {legal.consentText}{' '}
+            <a href={legal.policyUrl} target="_blank" rel="noopener noreferrer">
+              {legal.policyLabel}
+            </a>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--full">Хочу такого ККЧС!</button>
+        <p id="form-status" class="form-status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
+  const form = document.querySelector('#lead-form') as HTMLFormElement | null;
+  const statusEl = document.querySelector('#form-status');
+  const submitBtn = form?.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+  const figureSelect = document.querySelector('#figure') as HTMLSelectElement | null;
+  const previewBox = document.querySelector('#selected-preview');
+  const previewName = document.querySelector('#preview-name');
+  const previewPrice = document.querySelector('#preview-price');
+  const previewSwatch = document.querySelector('#preview-swatch') as HTMLElement | null;
+  const formLoadedAt = Date.now();
+  let formStarted = false;
+
+  form?.addEventListener('focusin', (e) => {
+    if (formStarted) return;
+    const target = e.target as HTMLElement;
+    if (target.matches('input:not([type="checkbox"]), textarea')) {
+      formStarted = true;
+      (window as any).trackEvent?.('form_start');
+    }
+  });
+
+  figureSelect?.addEventListener('change', () => {
+    const opt = figureSelect.options.item(figureSelect.selectedIndex);
+    if (!opt) return;
+    if (previewName) previewName.textContent = opt.dataset.name || opt.value;
+    if (previewPrice) previewPrice.textContent = opt.dataset.price || '';
+    if (previewSwatch && opt.dataset.color) {
+      previewSwatch.style.backgroundColor = opt.dataset.color;
+    }
+    previewBox?.classList.add('is-updated');
+    setTimeout(() => previewBox?.classList.remove('is-updated'), 300);
+  });
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form || !statusEl || !submitBtn) return;
+
+    const formData = new FormData(form);
+    const payload = {
+      figure: formData.get('figure'),
+      name: formData.get('name'),
+      contact: formData.get('contact'),
+      comment: formData.get('comment'),
+      website: formData.get('website'),
+      loaded_at: formLoadedAt,
+    };
+
+    submitBtn.disabled = true;
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Отправляем...';
+    statusEl.textContent = '';
+    statusEl.className = 'form-status';
+
+    try {
+      const response = await fetch(`${apiUrl}/ckcs-leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.ok) {
+        (window as any).trackEvent?.('lead_submit', { figure: payload.figure });
+        statusEl.textContent = '✨ ' + (result.message || 'Заявка успешно отправлена!');
+        statusEl.classList.add('is-success');
+        form.reset();
+        formStarted = false;
+        figureSelect?.dispatchEvent(new Event('change'));
+      } else {
+        throw new Error(result.error || 'Не удалось отправить заявку');
+      }
+    } catch (err) {
+      statusEl.textContent = '⚠️ ' + (err instanceof Error ? err.message : 'Ошибка соединения с сервером');
+      statusEl.classList.add('is-error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+    }
+  });
+</script>

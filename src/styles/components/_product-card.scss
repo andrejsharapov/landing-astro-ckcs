@@ -1,0 +1,121 @@
+@use '../utils/variables' as *;
+
+.product-card {
+  background: $bg-surface;
+  border-radius: $radius-lg;
+  border: 1px solid $border-soft;
+  box-shadow: $shadow-sm;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: $shadow-md;
+    border-color: rgba($primary, 0.35);
+  }
+
+  &__media-wrap {
+    padding: 10px 10px 0;
+  }
+
+  &__media {
+    position: relative;
+    height: 215px;
+    border-radius: 16px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+  }
+
+  &:hover &__media img {
+    transform: scale(1.06);
+  }
+
+  &__tag {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    color: $text-main;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(28, 24, 22, 0.08);
+  }
+
+  &__size {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 2;
+    background: rgba(28, 24, 22, 0.72);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  &__body {
+    padding: 18px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+    h3 {
+      font-size: 1.04rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 8px;
+      color: $text-main;
+    }
+
+    p {
+      color: $text-muted;
+      font-size: 0.91rem;
+      line-height: 1.5;
+      margin-bottom: 18px;
+      flex: 1;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid $border-soft;
+  }
+
+  &__price-wrap {
+    display: flex;
+    flex-direction: column;
+
+    small {
+      font-size: 0.72rem;
+      color: $text-muted;
+      line-height: 1.1;
+      margin-bottom: 2px;
+    }
+  }
+}
+
+.price {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: $text-main;
+  white-space: nowrap;
+}

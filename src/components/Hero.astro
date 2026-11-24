@@ -1,0 +1,57 @@
+---
+interface Stat {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  pill: string;
+  title: string;
+  highlight: string;
+  titleEnd: string;
+  lead: string;
+  videoUrl: string;
+  posterUrl: string;
+  stats: Stat[];
+}
+
+const { pill, title, highlight, titleEnd, lead, videoUrl, posterUrl, stats } = Astro.props;
+---
+
+<section class="hero">
+  <div class="hero__media" aria-hidden="true">
+    <video
+      class="hero__video"
+      autoplay
+      muted
+      loop
+      playsinline
+      poster={posterUrl}
+    >
+      <source src={videoUrl} type="video/mp4" />
+    </video>
+    <div class="hero__overlay"></div>
+  </div>
+
+  <div class="container hero__inner">
+    <div class="hero__content">
+      <span class="pill">{pill}</span>
+      <h1>
+        {title} <span>{highlight}</span> {titleEnd}
+      </h1>
+      <p class="hero__lead">{lead}</p>
+      <div class="hero__actions">
+        <a href="#catalog" class="btn btn--primary">Выбрать своего ККЧС</a>
+        <a href="#order" class="btn btn--ghost">Индивидуальный заказ</a>
+      </div>
+      <div class="hero__stats">
+        {stats.map((stat) => (
+          <div>
+            <strong>{stat.value}</strong>
+            <span>{stat.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

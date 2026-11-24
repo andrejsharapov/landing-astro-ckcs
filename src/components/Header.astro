@@ -1,0 +1,86 @@
+---
+interface Props {
+  brand: string;
+}
+
+const { brand } = Astro.props;
+---
+
+<header class="header">
+  <div class="header__inner">
+    <a href="#" class="logo">
+      <span class="logo__badge">3D</span>
+      <span>{brand}</span>
+    </a>
+
+    <nav class="nav">
+      <a href="#cavaliers">О породе</a>
+      <a href="#process">Изготовление</a>
+      <a href="#catalog">Каталог</a>
+      <a href="#reviews">Отзывы</a>
+      <a href="#faq">FAQ</a>
+
+      <div class="nav__actions">
+        <a href="#order" class="btn btn--sm">Заказать</a>
+        <button
+          type="button"
+          class="burger-btn"
+          id="open-mobile-menu"
+          aria-label="Открыть меню"
+        >
+          ☰
+        </button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+  <div class="mobile-menu__panel">
+    <div class="mobile-menu__top">
+      <span class="logo">
+        <span class="logo__badge">3D</span>
+        <span>{brand}</span>
+      </span>
+      <button
+        type="button"
+        class="burger-btn"
+        id="close-mobile-menu"
+        aria-label="Закрыть меню"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="mobile-menu__links">
+      <a href="#cavaliers">О породе</a>
+      <a href="#process">Изготовление</a>
+      <a href="#catalog">Каталог</a>
+      <a href="#reviews">Отзывы</a>
+      <a href="#faq">Частые вопросы</a>
+    </div>
+
+    <a href="#order" class="btn btn--primary btn--full">Оформить заказ</a>
+  </div>
+</div>
+
+<script>
+  const menu = document.querySelector("#mobile-menu");
+  const openBtn = document.querySelector("#open-mobile-menu");
+  const closeBtn = document.querySelector("#close-mobile-menu");
+
+  const toggleMenu = (open: boolean) => {
+    if (!menu) return;
+    menu.classList.toggle("is-open", open);
+    menu.setAttribute("aria-hidden", String(!open));
+    document.body.style.overflow = open ? "hidden" : "";
+  };
+
+  openBtn?.addEventListener("click", () => toggleMenu(true));
+  closeBtn?.addEventListener("click", () => toggleMenu(false));
+  menu?.addEventListener("click", (e) => {
+    if (e.target === menu || (e.target as HTMLElement).closest("a")) {
+      toggleMenu(false);
+    }
+  });
+</script>

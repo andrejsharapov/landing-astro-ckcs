@@ -1,0 +1,49 @@
+---
+interface Highlight {
+  title: string;
+  desc: string;
+}
+
+interface Feature {
+  icon: string;
+  title: string;
+  desc: string;
+}
+
+interface Props {
+  about: {
+    pill: string;
+    title: string;
+    lead: string;
+    imageUrl: string;
+    highlights: Highlight[];
+  };
+  features: Feature[];
+}
+
+const { about, features } = Astro.props;
+---
+
+<section id="cavaliers" class="cavaliers">
+  <div class="container">
+    <div class="cavaliers__box">
+      <div class="cavaliers__visual">
+        <img src={about.imageUrl} alt="Кавалер-кинг-чарльз-спаниель" loading="lazy" />
+      </div>
+      <div class="cavaliers__content">
+        <span class="pill">{about.pill}</span>
+        <h2>{about.title}</h2>
+        <p class="cavaliers__lead">{about.lead}</p>
+        <div class="cavaliers__highlights">
+          {about.highlights.map((item) => (
+            <div class="highlight-item">
+              <h4>{item.title}</h4>
+              <p>{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- секция features ниже остаётся без изменений -->

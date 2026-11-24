@@ -1,0 +1,66 @@
+---
+const ymId = import.meta.env.PUBLIC_YM_ID;
+const gtmId = import.meta.env.PUBLIC_GTM_ID;
+---
+
+{gtmId && (
+  <script is:inline define:vars={{ gtmId }}>
+    window.dataLayer = window.dataLayer || [];
+    (function (w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      var f = d.getElementsByTagName(s)[0];
+      var j = d.createElement(s);
+      var dl = l !== 'dataLayer' ? '&l=' + l : '';
+      j.async = true;
+      j.src = 'https://googletagmanager.com' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', gtmId);
+  </script>
+)}
+
+{ymId && (
+  <>
+    <script is:inline define:vars={{ ymId }}>
+      (function (m, e, t, r, i, k, a) {
+        m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); };
+        m[i].l = 1 * new Date();
+        for (var j = 0; j < document.scripts.length; j++) {
+          if (document.scripts[j].src === r) { return; }
+        }
+        k = e.createElement(t);
+        a = e.getElementsByTagName(t)[0];
+        k.async = 1;
+        k.src = r;
+        a.parentNode.insertBefore(k, a);
+      })(window, document, 'script', 'https://yandex.ru', 'ym');
+
+      ym(Number(ymId), 'init', {
+        clickmap: true,
+        trackLinks: true,
+        accurateTrackBounce: true,
+        webvisor: true,
+      });
+    </script>
+    <noscript>
+      <div>
+        <img
+          src={`https://yandex.ru{ymId}`}
+          style="position:absolute; left:-9999px;"
+          alt=""
+        />
+      </div>
+    </noscript>
+  </>
+)}
+
+<script is:inline define:vars={{ ymId }}>
+  window.trackEvent = function (goalName, params = {}) {
+    if (ymId && typeof window.ym === 'function') {
+      window.ym(Number(ymId), 'reachGoal', goalName, params);
+    }
+    if (Array.isArray(window.dataLayer)) {
+      window.dataLayer.push({ event: goalName, ...params });
+    }
+  };
+</script>

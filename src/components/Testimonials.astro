@@ -1,0 +1,47 @@
+---
+interface Review {
+  author: string;
+  city: string;
+  figure: string;
+  imageUrl: string;
+  text: string;
+}
+
+interface Props {
+  pill: string;
+  title: string;
+  lead: string;
+  items: Review[];
+}
+
+const { pill, title, lead, items } = Astro.props;
+---
+
+<section id="reviews" class="testimonials">
+  <div class="container">
+    <div class="section-head">
+      <span class="pill">{pill}</span>
+      <h2>{title}</h2>
+      <p>{lead}</p>
+    </div>
+
+    <div class="testimonials__grid">
+      {items.map((item) => (
+        <article class="review-card">
+          <div class="review-card__photo">
+            <img src={item.imageUrl} alt={item.figure} loading="lazy" />
+            <span class="review-card__caption">{item.figure}</span>
+          </div>
+          <div class="review-card__body">
+            <div class="review-card__stars" aria-label="Оценка 5 из 5">★★★★★</div>
+            <p class="review-card__text">«{item.text}»</p>
+            <div class="review-card__author">
+              <strong>{item.author}</strong>
+              <span>{item.city}</span>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

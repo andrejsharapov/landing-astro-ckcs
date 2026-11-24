@@ -1,0 +1,42 @@
+---
+interface Step {
+  num: string;
+  title: string;
+  imageUrl: string;
+  desc: string;
+}
+
+interface Props {
+  pill: string;
+  title: string;
+  lead: string;
+  steps: Step[];
+}
+
+const { pill, title, lead, steps } = Astro.props;
+---
+
+<section id="process" class="process">
+  <div class="container">
+    <div class="section-head">
+      <span class="pill">{pill}</span>
+      <h2>{title}</h2>
+      <p>{lead}</p>
+    </div>
+
+    <div class="process__grid">
+      {steps.map((step) => (
+        <article class="process-card">
+          <div class="process-card__media">
+            <span class="process-card__num">{step.num}</span>
+            <img src={step.imageUrl} alt={step.title} loading="lazy" />
+          </div>
+          <div class="process-card__body">
+            <h3>{step.title}</h3>
+            <p>{step.desc}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

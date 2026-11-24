@@ -1,0 +1,22 @@
+{
+  "name": "kkc-landing",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "description": "",
+  "scripts": {
+    "dev": "astro dev",
+    "llms": "node src/plugins/llms.txt.mjs",
+    "build": "npm run llms && astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/node": "^8.3.4",
+    "astro": "^4.16.18"
+  },
+  "devDependencies": {
+    "sass": "^1.108.2"
+  }
+}

@@ -1,0 +1,104 @@
+---
+import "../styles/main.scss";
+import data from "../data/landing.json";
+import Analytics from "../components/Analytics.astro";
+import CookieBanner from "../components/CookieBanner.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "" } = Astro.props;
+const siteUrl = (Astro.site ?? Astro.url.origin).toString().replace(/\/$/, "");
+const gtmId = import.meta.env.PUBLIC_GTM_ID;
+
+// Формируем Schema.org для каталога и FAQ (для SEO и AEO/GEO)
+const schemaGraph = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ItemList",
+      name: `${title}`,
+      itemListElement: data.figures.map((fig, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        item: {
+          "@type": "Product",
+          name: fig.name,
+          description: fig.desc,
+          image: fig.imageUrl,
+          offers: {
+            "@type": "Offer",
+            priceCurrency: "RUB",
+            price: String(fig.price).replace(/\D/g, ""),
+            availability: "https://schema.org",
+            url: `${siteUrl}/#catalog`,
+          },
+        },
+      })),
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: data.faq.items.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.a,
+        },
+      })),
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={siteUrl} />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#fbf8f4" />
+
+    <!-- Open Graph (для красивых превью в Telegram, VK и мессенджерах) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={siteUrl} />
+    <meta property="og:image" content={data.hero.posterUrl} />
+
+    <!-- Шрифты Unbounded (заголовки) + Golos Text (основной текст) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Структурированные данные JSON-LD -->
+    <script type="application/ld+json" set:html={JSON.stringify(schemaGraph)} />
+    <!-- Аналитика (Яндекс Метрика / GTM) -->
+    <Analytics />
+  </head>
+  <body>
+    {gtmId && (
+      <noscript>
+        <iframe
+          src={`https://googletagmanager.com{gtmId}`}
+          height="0"
+          width="0"
+          style="display:none;visibility:hidden"
+        ></iframe>
+      </noscript>
+    )}
+
+    <slot />
+
+    <CookieBanner policyUrl={data.legal.policyUrl} />
+  </body>
+</html>

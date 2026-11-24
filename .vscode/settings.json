@@ -1,0 +1,19 @@
+{
+    "editor.formatOnSave": true,
+    "[markdown]": {
+        "editor.defaultFormatter": "yzhang.markdown-all-in-one",
+        "editor.quickSuggestions": {
+            "comments": "on",
+            "strings": "on",
+            "other": "on"
+        },
+        "editor.wordWrap": "on",
+        "editor.rulers": [
+            {
+                "column": 40,
+                "color": "#5157ca53"
+            },
+        ],
+        "files.trimTrailingWhitespace": false
+    },
+}

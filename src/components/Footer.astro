@@ -1,0 +1,14 @@
+---
+interface Props {
+  brand: string;
+}
+
+const { brand } = Astro.props;
+---
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <span>© {new Date().getFullYear()} {brand} — авторские 3D-фигурки</span>
+    <span>Сделано <a href="https://madeas.github.io?utm_source=ckcs_landing_github" title="Madeas Studio">Madeas Studio</a> с любовью</span>
+  </div>
+</footer>

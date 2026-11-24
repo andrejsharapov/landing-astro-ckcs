@@ -1,0 +1,43 @@
+$bg-main: #fbf8f4;
+$bg-surface: #ffffff;
+$bg-card: #ffffff;
+$bg-warm: #f5eee6;
+$bg-warm-tint: #fff4eb;
+$bg-accent-soft: #ffede4;
+
+$text-main: #1c1816;
+$text-muted: #665c56;
+
+$primary: #ff6b3d;
+$primary-hover: #e85527;
+$accent-dark: #231d1a;
+
+$border-soft: rgba(28, 24, 22, 0.08);
+$border-strong: rgba(28, 24, 22, 0.16);
+$border-hover: rgba(28, 24, 22, 0.16);
+
+$font-display: 'Unbounded', sans-serif;
+$font-body: 'Golos Text', -apple-system, BlinkMacSystemFont, sans-serif;
+
+$shadow-sm: 0 4px 14px rgba(28, 24, 22, 0.04);
+$shadow-md: 0 16px 36px -8px rgba(28, 24, 22, 0.08);
+$shadow-lg: 0 28px 60px -12px rgba(28, 24, 22, 0.14);
+$shadow-card: $shadow-sm;
+$shadow-card-hover: $shadow-md;
+$shadow-glow: 0 14px 32px rgba(255, 107, 61, 0.34);
+
+$radius-xl: 32px;
+$radius-lg: 24px;
+$radius-md: 16px;
+
+@mixin tablet {
+  @media (max-width: 1040px) {
+    @content;
+  }
+}
+
+@mixin mobile {
+  @media (max-width: 768px) {
+    @content;
+  }
+}

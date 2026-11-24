@@ -1,0 +1,208 @@
+---
+import ProductCard from "./ProductCard.astro";
+
+interface Figure {
+  id: string;
+  name: string;
+  size: string;
+  price: string;
+  tag: string;
+  color: string;
+  imageUrl?: string;
+  desc: string;
+}
+
+interface Props {
+  figures: Figure[];
+}
+
+const { figures } = Astro.props;
+---
+
+<section id="catalog" class="catalog">
+  <div class="container">
+    <div class="catalog__top">
+      <div class="section-head section-head--left">
+        <span class="pill">🐾 Коллекция мастерской</span>
+        <h2>Выберите своего ККЧС</h2>
+        <p>
+          Листайте каталог и нажмите на понравившуюся фигурку, чтобы оформить
+          заявку
+        </p>
+      </div>
+
+      <div class="catalog__controls" aria-label="Управление слайдером">
+        <button
+          type="button"
+          class="slider-btn"
+          id="catalog-prev"
+          aria-label="Предыдущая фигурка"
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          class="slider-btn"
+          id="catalog-next"
+          aria-label="Следующая фигурка"
+        >
+          →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="catalog__track" id="catalog-track">
+    {figures.map((item) => (
+      <ProductCard {...item} />
+    ))}
+  </div>
+</section>
+
+<script>
+  const apiUrl = import.meta.env.PUBLIC_API_URL || "/api/v2";
+  const track = document.querySelector("#catalog-track") as HTMLElement | null;
+  const prevBtn = document.querySelector(
+    "#catalog-prev",
+  ) as HTMLButtonElement | null;
+  const nextBtn = document.querySelector(
+    "#catalog-next",
+  ) as HTMLButtonElement | null;
+  const figureSelect = document.querySelector(
+    "#figure",
+  ) as HTMLSelectElement | null;
+  const orderSection = document.querySelector("#order");
+
+  const formatPrice = (price: number | string, prefix = "") => {
+    const num = Number(price);
+    const formatted = Number.isFinite(num)
+      ? new Intl.NumberFormat("ru-RU").format(num)
+      : price;
+    return `${prefix || ""}${formatted} ₽`;
+  };
+
+  const escapeHtml = (str: string) =>
+    String(str ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+  function updateSliderButtons() {
+    if (!track || !prevBtn || !nextBtn) return;
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    prevBtn.disabled = track.scrollLeft <= 5;
+    nextBtn.disabled = track.scrollLeft >= maxScroll - 5;
+  }
+
+  function scrollCatalog(direction: number) {
+    if (!track) return;
+    const card = track.querySelector(".product-card") as HTMLElement | null;
+    const step = card ? card.offsetWidth + 20 : 340;
+    track.scrollBy({ left: direction * step, behavior: "smooth" });
+  }
+
+  prevBtn?.addEventListener("click", () => scrollCatalog(-1));
+  nextBtn?.addEventListener("click", () => scrollCatalog(1));
+  track?.addEventListener("scroll", updateSliderButtons, { passive: true });
+  window.addEventListener("resize", updateSliderButtons);
+  updateSliderButtons();
+
+  async function loadDynamicFigures() {
+    try {
+      const res = await fetch(`${apiUrl}/ckcs-figures`);
+      if (!res.ok) return;
+
+      const data = await res.json();
+      if (!data.ok || !Array.isArray(data.items) || data.items.length === 0)
+        return;
+
+      if (track) {
+        track.innerHTML = data.items
+          .map((item: any) => {
+            const fullPrice = formatPrice(item.price, item.price_prefix);
+            const name = escapeHtml(item.name);
+            const size = escapeHtml(item.size);
+            const tag = escapeHtml(item.tag);
+            const color = escapeHtml(item.color || "#FFE5D9");
+            const desc = escapeHtml(item.description);
+            const imgSrc = escapeHtml(item.image_url || "https://placehold.co");
+
+            return `
+              <article class="product-card">
+                <div class="product-card__media-wrap">
+                  <div class="product-card__media" style="background-color: ${color};">
+                    ${tag ? `<span class="product-card__tag">${tag}</span>` : ""}
+                    ${size ? `<span class="product-card__size">${size}</span>` : ""}
+                    <img src="${imgSrc}" alt="${name}" loading="lazy" />
+                  </div>
+                </div>
+                <div class="product-card__body">
+                  <h3>${name}</h3>
+                  <p>${desc}</p>
+                  <div class="product-card__footer">
+                    <div class="product-card__price-wrap">
+                      <small>Стоимость</small>
+                      <span class="price">${fullPrice}</span>
+                    </div>
+                    <button
+                      type="button"
+                      class="btn btn--secondary select-figure-btn"
+                      data-figure="${name} (${fullPrice})"
+                      data-name="${name}"
+                      data-price="${fullPrice}"
+                      data-color="${color}"
+                    >
+                      Выбрать
+                    </button>
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+
+        updateSliderButtons();
+      }
+
+      if (figureSelect) {
+        const currentVal = figureSelect.value;
+        figureSelect.innerHTML = data.items
+          .map((item: any) => {
+            const fullPrice = formatPrice(item.price, item.price_prefix);
+            const name = escapeHtml(item.name);
+            const color = escapeHtml(item.color || "#FFE5D9");
+            return `<option value="${name} (${fullPrice})" data-name="${name}" data-price="${fullPrice}" data-color="${color}">${name} — ${fullPrice}</option>`;
+          })
+          .join("");
+        if (currentVal) figureSelect.value = currentVal;
+        figureSelect.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    } catch (err) {
+      console.warn("Используется локальный каталог:", err);
+    }
+  }
+
+  // loadDynamicFigures();
+
+  track?.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    const btn = target.closest(".select-figure-btn");
+    if (!btn) return;
+
+    const value = btn.getAttribute("data-figure");
+    const name = btn.getAttribute("data-name");
+    const price = btn.getAttribute("data-price");
+
+    (window as any).trackEvent?.("click_catalog_select", {
+      figure: name,
+      price,
+    });
+
+    if (figureSelect && value) {
+      figureSelect.value = value;
+      figureSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    orderSection?.scrollIntoView({ behavior: "smooth" });
+  });
+</script>

@@ -1,0 +1,47 @@
+---
+interface Props {
+  policyUrl?: string;
+}
+
+const { policyUrl = "#" } = Astro.props;
+---
+
+<aside
+  class="cookie-banner"
+  id="cookie-banner"
+  role="region"
+  aria-label="Уведомление об использовании файлов cookie"
+  hidden
+>
+  <div class="cookie-banner__inner">
+    <p class="cookie-banner__text">
+      Мы используем файлы cookie и сервис аналитики <strong>Яндекс Метрика</strong>,
+      чтобы сайт работал быстрее и удобнее. Продолжая пользоваться сайтом, вы соглашаетесь с{' '}
+      <a href={policyUrl} target="_blank" rel="noopener noreferrer">
+        Политикой конфиденциальности
+      </a>.
+    </p>
+    <button type="button" class="btn btn--sm cookie-banner__btn" id="cookie-accept">
+      Хорошо
+    </button>
+  </div>
+</aside>
+
+<script>
+  const STORAGE_KEY = "ckcs_cookie_consent_v1";
+  const banner = document.querySelector("#cookie-banner") as HTMLElement | null;
+  const acceptBtn = document.querySelector("#cookie-accept");
+
+  if (banner && !localStorage.getItem(STORAGE_KEY)) {
+    banner.hidden = false;
+    requestAnimationFrame(() => banner.classList.add("is-visible"));
+  }
+
+  acceptBtn?.addEventListener("click", () => {
+    localStorage.setItem(STORAGE_KEY, "accepted");
+    banner?.classList.remove("is-visible");
+    setTimeout(() => {
+      if (banner) banner.hidden = true;
+    }, 260);
+  });
+</script>
