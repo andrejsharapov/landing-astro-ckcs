@@ -12,7 +12,9 @@ function sendTelegramLead(array $config, array $lead): void
         return;
     }
 
-    $esc = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $esc = static function (string $v): string {
+        return htmlspecialchars($v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    };
 
     $text  = "🐶 <b>Новая заявка на ККЧС!</b>\n\n";
     $text .= "<b>Фигурка:</b> " . $esc($lead['figure']) . "\n";
@@ -103,7 +105,7 @@ function extractField(array $data, string $key, int $maxLength, string $default 
     return mb_substr($value, 0, $maxLength);
 }
 
-$configPath = __DIR__ . '/../../../api/v1/config.php';
+$configPath = __DIR__ . '/../../../../api/v1/ckcs-services-config.php';
 
 if (!file_exists($configPath)) {
     error_log('API ckcs-leads: config.php not found');
